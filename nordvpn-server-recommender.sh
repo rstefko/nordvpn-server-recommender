@@ -13,6 +13,11 @@ nordvpn_api() {
         jq --arg val "$2" -r '.[] | [.id, .[$val]] | @tsv'
 }
 
+nordvpn_remote_print() {
+    curl -sg "https://nordvpn.com/wp-admin/admin-ajax.php?action=servers_recommendations$1" |
+        jq -r '.[] | ["remote " + .hostname + " 1194 # " + .station] | @tsv'
+}
+
 get_opt() {
     if echo "$2" | cut -f 2 | grep -Fqx "$1"; then
         echo "$2" | awk -v c="$1" 'BEGIN{FS="\t";}{if(c==$2){print$1}}'
@@ -120,4 +125,4 @@ if [ "$filter_bool" = 1 ]; then
             | from_entries')"
 fi
 
-nordvpn_api "recommendations$filter" hostname | cut -f 2
+nordvpn_remote_print $filter
